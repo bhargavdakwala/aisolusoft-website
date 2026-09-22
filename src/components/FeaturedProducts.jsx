@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   ArrowRight,
@@ -359,40 +359,65 @@ function ToolsPreview() {
 
 
 export default function FeaturedProducts() {
-
   const [activeProduct, setActiveProduct] = useState(0);
+  const [direction, setDirection] = useState("next");
+  const [isPaused, setIsPaused] = useState(false);
 
-  const product =
-    featuredProducts[activeProduct];
+  const timerRef = useRef(null);
 
+  const product = featuredProducts[activeProduct];
   const Icon = product.icon;
 
+  const goToProduct = (index, dir = "next") => {
+    setDirection(dir);
+    setActiveProduct(index);
+  };
 
   const nextProduct = () => {
-    setActiveProduct(
-      (current) =>
-        (current + 1) %
-        featuredProducts.length
+    goToProduct(
+      (activeProduct + 1) % featuredProducts.length,
+      "next"
     );
   };
-
 
   const previousProduct = () => {
-    setActiveProduct(
-      (current) =>
-        (current - 1 +
-          featuredProducts.length) %
-        featuredProducts.length
+    goToProduct(
+      (activeProduct - 1 + featuredProducts.length) %
+        featuredProducts.length,
+      "previous"
     );
   };
 
+  useEffect(() => {
+    if (isPaused) {
+      return;
+    }
+
+    timerRef.current = setInterval(() => {
+      setActiveProduct((current) => {
+        setDirection("next");
+
+        return (
+          (current + 1) %
+          featuredProducts.length
+        );
+      });
+    }, 5000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [isPaused]);
 
   return (
     <section
       className="featured-section"
       id="featured"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
     >
-
       <div className="featured-background" />
 
       <div className="container">
@@ -404,11 +429,8 @@ export default function FeaturedProducts() {
           <div>
 
             <div className="section-tag light-tag">
-
               <Sparkles size={14} />
-
               FEATURED PRODUCTS
-
             </div>
 
             <h2>
@@ -419,7 +441,6 @@ export default function FeaturedProducts() {
 
           </div>
 
-
           <p>
             Explore AISoluSoft products built around
             real-world productivity, recruitment,
@@ -429,13 +450,20 @@ export default function FeaturedProducts() {
         </div>
 
 
-        {/* MAIN PRODUCT */}
+        {/* CAROUSEL */}
 
         <div className="featured-carousel">
 
-          <div className="featured-main">
+          <div
+            key={product.id}
+            className={`featured-main ${
+              direction === "next"
+                ? "slide-next"
+                : "slide-previous"
+            }`}
+          >
 
-            {/* LEFT SIDE */}
+            {/* LEFT */}
 
             <div className="featured-copy">
 
@@ -467,14 +495,12 @@ export default function FeaturedProducts() {
 
               <div className="featured-features">
 
-                {product.features.map(
-                  (feature) => (
-                    <div key={feature}>
-                      <CheckCircle size={15} />
-                      {feature}
-                    </div>
-                  )
-                )}
+                {product.features.map((feature) => (
+                  <div key={feature}>
+                    <CheckCircle size={15} />
+                    {feature}
+                  </div>
+                ))}
 
               </div>
 
@@ -484,6 +510,7 @@ export default function FeaturedProducts() {
               <div className="featured-controls">
 
                 <button
+                  type="button"
                   onClick={previousProduct}
                   aria-label="Previous product"
                 >
@@ -495,23 +522,24 @@ export default function FeaturedProducts() {
 
                   {featuredProducts.map(
                     (item, index) => (
-
                       <button
+                        type="button"
                         key={item.id}
                         className={
-                          index ===
-                          activeProduct
+                          index === activeProduct
                             ? "active"
                             : ""
                         }
                         onClick={() =>
-                          setActiveProduct(index)
+                          goToProduct(
+                            index,
+                            index > activeProduct
+                              ? "next"
+                              : "previous"
+                          )
                         }
-                        aria-label={
-                          `Show ${item.title}`
-                        }
+                        aria-label={`Show ${item.title}`}
                       />
-
                     )
                   )}
 
@@ -519,6 +547,7 @@ export default function FeaturedProducts() {
 
 
                 <button
+                  type="button"
                   onClick={nextProduct}
                   aria-label="Next product"
                 >
@@ -527,10 +556,20 @@ export default function FeaturedProducts() {
 
               </div>
 
+
+              {/* PROGRESS */}
+
+              <div className="featured-progress">
+                <div
+                  key={`${product.id}-progress`}
+                  className="featured-progress-bar"
+                />
+              </div>
+
             </div>
 
 
-            {/* RIGHT SIDE */}
+            {/* RIGHT */}
 
             <div className="featured-preview">
 
@@ -555,7 +594,7 @@ export default function FeaturedProducts() {
           </div>
 
 
-          {/* PRODUCT SELECTOR */}
+          {/* PRODUCT NAV */}
 
           <div className="featured-product-nav">
 
@@ -565,8 +604,8 @@ export default function FeaturedProducts() {
                 const ItemIcon = item.icon;
 
                 return (
-
                   <button
+                    type="button"
                     key={item.id}
                     className={
                       index === activeProduct
@@ -574,24 +613,26 @@ export default function FeaturedProducts() {
                         : "product-nav-item"
                     }
                     onClick={() =>
-                      setActiveProduct(index)
+                      goToProduct(
+                        index,
+                        index > activeProduct
+                          ? "next"
+                          : "previous"
+                      )
                     }
                   >
 
                     <ItemIcon size={17} />
 
                     <span>
-
                       <small>
                         {item.number}
                       </small>
 
                       {item.title}
-
                     </span>
 
                   </button>
-
                 );
               }
             )}
@@ -601,7 +642,6 @@ export default function FeaturedProducts() {
         </div>
 
       </div>
-
     </section>
   );
 }

@@ -36,22 +36,22 @@ function App() {
 
           {/* BRAND */}
 
-          <button
-            className="brand"
-            onClick={() => scrollTo("home")}
-            aria-label="AISoluSoft home"
-          >
+<div className="brand">
+  <div className="brand-mark">
+    <span>A</span>
+    <i />
+  </div>
 
-            <div className="brand-mark">
-              <span>A</span>
-              <i />
-            </div>
+  <div className="brand-content">
+    <span className="brand-name">
+      AI<span>Solu</span>Soft
+    </span>
 
-            <span className="brand-name">
-              AI<span>Solu</span>Soft
-            </span>
-
-          </button>
+    <span className="brand-tagline">
+      AI That Solves. Software That Scales.
+    </span>
+  </div>
+</div>
 
 
           {/* DESKTOP NAVIGATION */}
